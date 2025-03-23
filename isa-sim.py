@@ -356,13 +356,15 @@ def execute_instruction(opcode, op_1, op_2, op_3):
         # op_1 = op_2 - op_3
         registerFile.write_register(op_1, registerFile.read_register(op_2) - registerFile.read_register(op_3))
     elif opcode == 'AND':
-        # The AND operation is a bitwise operation that takes two binary numbers and performs a logical AND on each pair of corresponding bits.
-        # The result is a new binary number where each bit is 1 if both corresponding bits of the input numbers are 1, and 0 otherwise.
+        # compares op_2 and op_3 with resulting value is written to op_1, where
+        # each bit is 1 if both corresponding bits of the input numbers are 1, and 0 otherwise.
         registerFile.write_register(op_1, registerFile.read_register(op_2) & registerFile.read_register(op_3))
     elif opcode == 'OR':
+        # compares op_2 and op_3 with resulting value is written to op_1, where
+        # each bit is 1 if either one of the corresponding bits of the input numbers are 1, and 0 otherwise.
         registerFile.write_register(op_1, registerFile.read_register(op_2) | registerFile.read_register(op_3))
     elif opcode == 'NOT':
-        # The NOT operation is a bitwise operation that inverts each bit of its operand. In other words, it changes every 1 to 0 and every 0 to 1.
+        #inverts each bit of its operand.
         registerFile.write_register(op_1, ~registerFile.read_register(op_2))
     elif opcode == 'LI':
         # op_1 = op_2
@@ -396,8 +398,7 @@ def execute_instruction(opcode, op_1, op_2, op_3):
         # end of the program (ends the parent loop)
         end = True
     else:
-        print(f"Unknown opcode: {opcode}")
-        return "ERROR"
+        raise Exception(f"\033[91mERROR: Unknown opcode: {opcode}\033[0m")
     # Increment the instruction pointer
     current_index += 1
 
@@ -409,7 +410,12 @@ while current_cycle < max_cycles and not end:
     op_1 = instructionMemory.read_operand_1(current_index)
     op_2 = instructionMemory.read_operand_2(current_index)
     op_3 = instructionMemory.read_operand_3(current_index)
-    execute_instruction(opcode, op_1, op_2, op_3)
+    # Execute the instruction and handle if an error occurred during execution
+    try:
+        execute_instruction(opcode, op_1, op_2, op_3)
+    except Exception as e:
+        print(e)
+        break
     # Increment the cycle counter
     current_cycle += 1
     print(f"Current cycle: {current_cycle}")
@@ -419,8 +425,8 @@ while current_cycle < max_cycles and not end:
     dataMemory.print_used()
     print("-" * 40)
 
-print("\n"*2)
-print("Final values:")
+print("\n")
+print(f"Final values after {current_cycle} cycles:")
 registerFile.print_all()
 print("\n")
 dataMemory.print_used()
