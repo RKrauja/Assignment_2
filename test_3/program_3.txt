@@ -1,0 +1,17 @@
+# Variable initialization
+0: LI R3, 10; # Max index
+1: LI R5, 12; # End pointer
+2: LI R6, 1;  # Increment
+3: LI R7, 5;  # Loop start pointer
+4: LI R8, 9;  # Add pointer
+
+#Loop
+5: LD R2, R4; # loads current value in R2 from R4 memory address
+6: JLT R8, R2, R1; #
+7: SD R2, R3;
+8: LD R1, R3;
+9: ADD R4, R4, R6;
+10: JEQ R5, R4, R3;
+11: JR R7;
+12: END;
+

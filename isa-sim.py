@@ -77,6 +77,15 @@ class RegisterFile:
         for i in range(0, 16):
             self.print_register('R' + str(i))
 
+    '''
+    This method prints the content non-zero registers in the register file.
+    '''
+    def print_non_zero(self):
+        print('Non-zero register file values:')
+        for register in self.registers:
+            if self.registers[register] != 0:
+                print(register + ' = ' + str(self.registers[register]))
+
 
 '''
 This class models the data memory of the processor. When an object of the
@@ -334,7 +343,6 @@ instructionMemory = InstructionMemory()
 print('\n---Start of simulation---')
 
 current_index = 0
-current_cycle = 0
 end = False
 
 
@@ -342,56 +350,79 @@ def execute_instruction(opcode, op_1, op_2, op_3):
     global current_index
     global end
     if opcode == 'ADD':
+        # op_1 = op_2 + op_3
         registerFile.write_register(op_1, registerFile.read_register(op_2) + registerFile.read_register(op_3))
     elif opcode == 'SUB':
+        # op_1 = op_2 - op_3
         registerFile.write_register(op_1, registerFile.read_register(op_2) - registerFile.read_register(op_3))
     elif opcode == 'AND':
+        # The AND operation is a bitwise operation that takes two binary numbers and performs a logical AND on each pair of corresponding bits.
+        # The result is a new binary number where each bit is 1 if both corresponding bits of the input numbers are 1, and 0 otherwise.
         registerFile.write_register(op_1, registerFile.read_register(op_2) & registerFile.read_register(op_3))
     elif opcode == 'OR':
         registerFile.write_register(op_1, registerFile.read_register(op_2) | registerFile.read_register(op_3))
     elif opcode == 'NOT':
+        # The NOT operation is a bitwise operation that inverts each bit of its operand. In other words, it changes every 1 to 0 and every 0 to 1.
         registerFile.write_register(op_1, ~registerFile.read_register(op_2))
     elif opcode == 'LI':
+        # op_1 = op_2
         registerFile.write_register(op_1, int(op_2))
     elif opcode == 'LD':
+        # op_1 = dataMemory[op_2]
         address = registerFile.read_register(op_2)
         registerFile.write_register(op_1, dataMemory.read_data(address))
     elif opcode == 'SD':
+        # dataMemory[op_2] = op_1
         address = registerFile.read_register(op_2)
         dataMemory.write_data(address, registerFile.read_register(op_1))
     elif opcode == 'JR':
+        # go to line with address op_1
         current_index = registerFile.read_register(op_1)
         return
     elif opcode == 'JEQ':
+        # if op_2 == op_3 then go to line with address op_1
         if registerFile.read_register(op_2) == registerFile.read_register(op_3):
             current_index = registerFile.read_register(op_1)
             return
     elif opcode == 'JLT':
+        # if op_2 < op_3 then go to line with address op_1
         if registerFile.read_register(op_2) < registerFile.read_register(op_3):
             current_index = registerFile.read_register(op_1)
             return
     elif opcode == 'NOP':
+        # do nothing
         pass
     elif opcode == 'END':
+        # end of the program (ends the parent loop)
         end = True
+    else:
+        print(f"Unknown opcode: {opcode}")
+        return "ERROR"
+    # Increment the instruction pointer
     current_index += 1
 
-    # else:
-    #     return "ERROR"
 
-
+# Main:
 while current_cycle < max_cycles and not end:
-    instruction = instructionMemory.instruction_memory[current_index]
+    # Assign values to variables for the current iteration
     opcode = instructionMemory.read_opcode(current_index)
     op_1 = instructionMemory.read_operand_1(current_index)
     op_2 = instructionMemory.read_operand_2(current_index)
     op_3 = instructionMemory.read_operand_3(current_index)
     execute_instruction(opcode, op_1, op_2, op_3)
+    # Increment the cycle counter
     current_cycle += 1
-    print(current_cycle)
+    print(f"Current cycle: {current_cycle}")
+    print(f"Current instruction line: {current_index}")
+    print(f"Current instruction: {opcode} {op_1} {op_2} {op_3}")
+    registerFile.print_non_zero()
+    dataMemory.print_used()
+    print("-" * 40)
 
-RegisterFile.print_all(registerFile)
+print("\n"*2)
+print("Final values:")
+registerFile.print_all()
 print("\n")
-DataMemory.print_used(dataMemory)
+dataMemory.print_used()
 
 print('\n---End of simulation---\n')
